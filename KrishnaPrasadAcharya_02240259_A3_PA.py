@@ -1,10 +1,7 @@
-
 import random
 import os
 import tkinter as tk
-from tkinter import messagebox
-import tkinter.simpledialog as simpledialog
-
+from tkinter import messagebox, simpledialog
 
 class InvalidInputException(Exception):
     """Raised when the user inputs an invalid value."""
@@ -157,15 +154,18 @@ class BankingGUI:
         self.current_account = None
         self.root = tk.Tk()
         self.root.title("Banking System GUI")
-        self.root.geometry("600x400") 
+        self.root.geometry("400x400")
 
         self.label = tk.Label(self.root, text="Welcome to GUI Banking System")
-        self.label.pack()
+        self.label.pack(pady=10)
 
-        tk.Button(self.root, text="Open Account", command=self.open_account).pack()
-        tk.Button(self.root, text="Login", command=self.login).pack()
-        tk.Button(self.root, text="Check Balance", command=self.check_balance).pack()
-        tk.Button(self.root, text="Top Up Mobile", command=self.top_up_mobile).pack()
+        tk.Button(self.root, text="Open Account", command=self.open_account).pack(pady=5)
+        tk.Button(self.root, text="Login", command=self.login).pack(pady=5)
+        tk.Button(self.root, text="Check Balance", command=self.check_balance).pack(pady=5)
+        tk.Button(self.root, text="Top Up Mobile", command=self.top_up_mobile).pack(pady=5)
+        tk.Button(self.root, text="Deposit", command=self.deposit).pack(pady=5)
+        tk.Button(self.root, text="Withdraw", command=self.withdraw).pack(pady=5)
+        tk.Button(self.root, text="Transfer", command=self.transfer).pack(pady=5)
 
     def run(self):
         self.root.mainloop()
@@ -199,6 +199,45 @@ class BankingGUI:
                 msg = self.system.top_up_mobile(self.current_account, number, amount)
                 messagebox.showinfo("Success", msg)
                 self.system.save_accounts()
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+        else:
+            messagebox.showerror("Error", "Login first.")
+
+    def deposit(self):
+        if self.current_account:
+            amount = simpledialog.askfloat("Deposit", "Enter amount:")
+            try:
+                self.current_account.deposit(amount)
+                self.system.save_accounts()
+                messagebox.showinfo("Success", f"Deposited ₹{amount}")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+        else:
+            messagebox.showerror("Error", "Login first.")
+
+    def withdraw(self):
+        if self.current_account:
+            amount = simpledialog.askfloat("Withdraw", "Enter amount:")
+            try:
+                self.current_account.withdraw(amount)
+                self.system.save_accounts()
+                messagebox.showinfo("Success", f"Withdrawn ₹{amount}")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+        else:
+            messagebox.showerror("Error", "Login first.")
+
+    def transfer(self):
+        if self.current_account:
+            target = simpledialog.askstring("Transfer", "Enter recipient account number:")
+            amount = simpledialog.askfloat("Transfer", "Enter amount:")
+            try:
+                if target not in self.system.accounts:
+                    raise AccountNotFoundException("Recipient account not found.")
+                self.current_account.transfer(amount, self.system.accounts[target])
+                self.system.save_accounts()
+                messagebox.showinfo("Success", f"Transferred ₹{amount} to {target}")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
         else:
